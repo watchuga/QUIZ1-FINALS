@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITC-201: Data Structures & Algorithms Examination</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <div class="max-w-2xl mx-auto w-full py-10 px-4 flex-1 flex flex-col justify-center">
+        
+        <!-- ================= SCREEN 1: WELCOME & NAME ENTRY ================= -->
+        <div id="welcome-screen" class="bg-white shadow-md rounded-2xl p-8 border border-slate-200">
+            <h1 class="text-2xl font-extrabold text-indigo-600 mb-2">ITC-201: Data Structures & Algorithms</h1>
+            <p class="text-slate-600 text-sm mb-6">Please enter your full name before starting the examination. Note: Questions are randomized, presented one-by-one, and you cannot return to previous questions.</p>
+            
+            <div class="mb-6">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Student Full Name</label>
+                <input type="text" id="student-name-input" placeholder="e.g. DELA CRUZ, JUAN A." class="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white font-semibold text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <p id="name-error" class="text-rose-500 text-xs mt-1 hidden">Please enter your name to proceed.</p>
+            </div>
+
+            <button onclick="startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-lg">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- ================= SCREEN 2: QUIZ INTERFACE ================= -->
+        <div id="quiz-wrapper" class="hidden">
+            <!-- Header / Progress Info -->
+            <header class="bg-white shadow-sm rounded-2xl p-6 mb-6 border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <span id="display-student-name" class="text-xs font-bold text-slate-500 uppercase tracking-wide"></span>
+                    <span id="progress-indicator" class="text-xs font-semibold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full">Question 1 of 40</span>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 2.5%;"></div>
+                </div>
+            </header>
+
+            <!-- Quiz Card Container -->
+            <main id="quiz-card" class="bg-white shadow-md rounded-2xl p-6 mb-6 border border-slate-200 transition-all">
+                <!-- Dynamic Question Content Injected Here -->
+            </main>
+
+            <!-- Navigation Button (Next / Submit only - No Back) -->
+            <div class="flex justify-end items-center">
+                <button id="next-btn" onclick="nextQuestion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition text-lg">
+                    Next Question
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= SCREEN 3: SCORE & REVIEW SCREEN ================= -->
+        <div id="score-screen" class="hidden bg-white shadow-md rounded-2xl p-8 border border-slate-200">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 mb-1">Examination Completed</h2>
+                <p id="review-student-name" class="text-indigo-600 font-semibold mb-4"></p>
+                <div class="text-5xl font-extrabold text-indigo-600 mb-2"><span id="final-score">0</span> <span class="text-2xl text-slate-400">/ 40</span></div>
+                <p class="text-slate-500 text-sm">Review your answers below to see where you were correct or incorrect.</p>
+            </div>
+
+            <!-- Detailed Answer Review Container -->
+            <div id="review-container" class="space-y-4 mb-8 max-h-[500px] overflow-y-auto pr-2">
+                <!-- Injected review feedback items -->
+            </div>
+
+            
+        </div>
+
+    </div>
+
+    <script>
+        // Master Question Bank (40 Items)
+        const rawQuestions = [
+            // Multiple Choice (1-20)
+            { type: "mcq", q: "A linear data structure operating on a LIFO (Last-In, First-Out) principle.", options: ["A. Que", "B. Queue", "C. Cue", "D. Stack"], answer: "D" },
+            { type: "mcq", q: "Elements are inserted and removed exclusively from a single end in this linear data structure.", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "B" },
+            { type: "mcq", q: "It uses a single tracking reference called the Top.", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "B" },
+            { type: "mcq", q: "What operation mechanic retrieves the value at top and decrements top?", options: ["A. Push", "B. Pop", "C. Peek", "D. Print"], answer: "B" },
+            { type: "mcq", q: "What is operation mechanic Increments top and writes the new element at top?", options: ["A. Push", "B. Pop", "C. Peek", "D. Print"], answer: "A" },
+            { type: "mcq", q: "Returns the data located at top without altering the index.", options: ["A. Push", "B. Pop", "C. Peek", "D. Print"], answer: "C" },
+            { type: "mcq", q: "If the ______ is fixed-size and full, this triggers a Stack Overflow error.", options: ["A. Push", "B. Pop", "C. Peek", "D. Print"], answer: "A" },
+            { type: "mcq", q: "If empty, calling _________ causes a Stack Underflow error.", options: ["A. Push", "B. Pop", "C. Peek", "D. Print"], answer: "B" },
+            { type: "mcq", q: "A linear data structure operating on a FIFO (First-In, First-Out) principle.", options: ["A. Queue", "B. Linked Lists", "C. Tree", "D. Array"], answer: "A" },
+            { type: "mcq", q: "In this linear data structure, elements enter from the rear and exit from the front.", options: ["A. Queue", "B. Linked Lists", "C. Tree", "D. Array"], answer: "A" },
+            { type: "mcq", q: "What handles insertion on queue?", options: ["A. Rear", "B. Front", "C. Head", "D. Node"], answer: "A" },
+            { type: "mcq", q: "What handles deletion on queue?", options: ["A. Rear", "B. Front", "C. O(n)", "D. Node"], answer: "B" },
+            { type: "mcq", q: "Overcomes linear array capacity issues by wrapping the end pointer around back to the beginning via modulo operations.", options: ["A. Double-Ended Queue", "B. Priority Queue", "C. Triangular Queue", "D. Circular Queue"], answer: "D" },
+            { type: "mcq", q: "It allows insertions and deletions at both the front and rear.", options: ["A. Double-Ended Queue", "B. Priority Queue", "C. Triangular Queue", "D. Circular Queue"], answer: "A" },
+            { type: "mcq", q: "This happens when elements are dequeued based on priority value rather than arrival order.", options: ["A. Double-Ended Queue", "B. Priority Queue", "C. Triangular Queue", "D. Circular Queue"], answer: "B" },
+            { type: "mcq", q: "A queue that is frequently implemented using a Heap data structure.", options: ["A. Double-Ended Queue", "B. Priority Queue", "C. Triangular Queue", "D. Circular Queue"], answer: "B" },
+            { type: "mcq", q: "On array based implementation, this data structure is fast but fixed-size unless using dynamic array allocation.", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "B" },
+            { type: "mcq", q: "On standard array queues, this can lead to unusable space after several dequeue operations.", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "A" },
+            { type: "mcq", q: "What data structure prevents size limits and memory waste?", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "C" },
+            { type: "mcq", q: "When empty, top = -1 (in array implementations) or top = NULL (in linked list implementations).", options: ["A. Queue", "B. Stack", "C. Linked List", "D. Array"], answer: "B" },
+
+            // Classification (21-30)
+            { type: "class", q: "You are building a support desk platform like Zendesk. Incoming customer issue tickets must be addressed strictly by support agents in the order they were submitted.", answer: "Q" },
+            { type: "class", q: "You are designing the queue system for League of Legends or Valorant. Players press 'Find Match' and must be grouped together as soon as enough players join the pool.", answer: "Q" },
+            { type: "class", q: "You are building Instagram's profile grid layout where a user can tap directly on photo #120 out of 1,000 photos and render it instantly.", answer: "A" },
+            { type: "class", q: "You are writing a compiler or OS kernel. When Function A calls Function B, which then calls Function C, the system must remember where to return when Function C finishes.", answer: "S" },
+            { type: "class", q: "You are designing an operating system's CPU scheduler. Time slices are distributed evenly across running background apps, looping continuously back to the first app after the last app runs.", answer: "Q" },
+            { type: "class", q: "You are building YouTube's video player. Incoming video frames downloaded over Wi-Fi must be held temporarily in memory and played back sequentially without stuttering.", answer: "Q" },
+            { type: "class", q: "You are creating a music app playlist feature where songs play sequentially, and once the final track ends, track #1 automatically begins playing without stopping.", answer: "LL" },
+            { type: "class", q: "You are managing real-time stock ticker updates where thousands of prices arrive per minute. You need to prepend new prices to the front of your storage structure constantly without lagging.", answer: "LL" },
+            { type: "class", q: "You are building a code editor compiler that checks if standard math or code expressions (e.g., {[()()]}) have matching opening and closing brackets.", answer: "S" },
+            { type: "class", q: "You are designing a hospital intake system. Patients with life-threatening injuries must be treated ahead of patients with minor scrapes, regardless of who arrived at the waiting room first.", answer: "Q" },
+
+            // Identification (31-40) - Strict CAPITAL LETTERS required
+            { type: "ident", q: "The connection/link between two nodes.", answer: "EDGE" },
+            { type: "ident", q: "A node that has at least one child node.", answer: "INTERNAL NODE" },
+            { type: "ident", q: "A parent node points directly to a child node below it.", answer: "EDGE" },
+            { type: "ident", q: "Nodes that share the exact same parent node.", answer: "SIBLINGS" },
+            { type: "ident", q: "The topmost node with no parent node.", answer: "ROOT" },
+            { type: "ident", q: "A node that has zero children.", answer: "LEAF NODE" },
+            { type: "ident", q: "The number of edges from the root node down to that specific node.", answer: "DEPTH" },
+            { type: "ident", q: "The number of edges on the longest path from that node down to a leaf.", answer: "HEIGHT" },
+            { type: "ident", q: "It is a Self-Balancing Binary Search Tree.", answer: "AVL TREE" },
+            { type: "ident", q: "A self-balancing binary search tree where each node stores an extra bit representing color.", answer: "RED-BLACK TREE" }
+        ];
+
+        let studentName = "";
+        let shuffledQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        // Shuffle function (Fisher-Yates) to randomize question order
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name-input');
+            const errorMsg = document.getElementById('name-error');
+            
+            if (!nameInput.value.trim()) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            studentName = nameInput.value.trim().toUpperCase();
+            errorMsg.classList.add('hidden');
+
+            // Randomize questions for this student session
+            shuffledQuestions = shuffleArray(rawQuestions);
+            currentIndex = 0;
+            userAnswers = {};
+
+            // Switch screens
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('quiz-wrapper').classList.remove('hidden');
+            document.getElementById('display-student-name').textContent = `Student: ${studentName}`;
+            
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const container = document.getElementById('quiz-card');
+            const qData = shuffledQuestions[currentIndex];
+            let currentNum = currentIndex + 1;
+
+            // Update Progress Header
+            document.getElementById('progress-indicator').textContent = `Question ${currentNum} of 40`;
+            document.getElementById('progress-bar').style.width = `${(currentNum / 40) * 100}%`;
+
+            let htmlContent = `<p class="text-xs uppercase tracking-wider font-bold text-indigo-500 mb-1">Question ${currentNum}</p>`;
+            htmlContent += `<p class="text-lg font-semibold text-slate-900 mb-6">${qData.q}</p>`;
+
+            let savedAnswer = userAnswers[currentIndex] || "";
+
+            if (qData.type === 'mcq') {
+                htmlContent += `<div class="space-y-3">`;
+                qData.options.forEach(opt => {
+                    let letter = opt.charAt(0);
+                    let isChecked = savedAnswer === letter ? 'checked' : '';
+                    htmlContent += `
+                        <label class="flex items-center space-x-3 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+                            <input type="radio" name="current_q" value="${letter}" ${isChecked} onchange="saveAnswer('${letter}')" class="text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                            <span class="text-slate-700 font-medium">${opt}</span>
+                        </label>`;
+                });
+                htmlContent += `</div>`;
+            } else if (qData.type === 'class') {
+                htmlContent += `
+                    <div class="mb-4">
+                        <p class="text-xs text-slate-500 mb-2 font-medium">Select structure: Q (Queue), LL (Linked List), S (Stack), A (Array)</p>
+                        <select id="class-select" onchange="saveAnswer(this.value)" class="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- Select Structure --</option>
+                            <option value="Q" ${savedAnswer === 'Q' ? 'selected' : ''}>Q - Queue</option>
+                            <option value="LL" ${savedAnswer === 'LL' ? 'selected' : ''}>LL - Linked List</option>
+                            <option value="S" ${savedAnswer === 'S' ? 'selected' : ''}>S - Stack</option>
+                            <option value="A" ${savedAnswer === 'A' ? 'selected' : ''}>A - Array</option>
+                        </select>
+                    </div>`;
+            } else if (qData.type === 'ident') {
+                htmlContent += `
+                    <div>
+                        <p class="text-xs text-rose-500 mb-2 font-bold uppercase">Constraint: Erasures prohibited. Strict ALL CAPS input only.</p>
+                        <input type="text" id="ident-input" value="${savedAnswer}" oninput="handleUppercaseInput(this)" placeholder="TYPE YOUR ANSWER IN ALL CAPS..." class="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white font-bold text-slate-800 uppercase tracking-wide focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>`;
+            }
+
+            container.innerHTML = htmlContent;
+
+            // Configure button for final question vs next question
+            const nextBtn = document.getElementById('next-btn');
+            if (currentIndex === shuffledQuestions.length - 1) {
+                nextBtn.textContent = "Submit Examination";
+                nextBtn.setAttribute("onclick", "submitQuiz()");
+            } else {
+                nextBtn.textContent = "Next Question";
+                nextBtn.setAttribute("onclick", "nextQuestion()");
+            }
+        }
+
+        // Force Identification input to strictly CAPITAL LETTERS instantly
+        function handleUppercaseInput(inputElement) {
+            inputElement.value = inputElement.value.toUpperCase();
+            saveAnswer(inputElement.value);
+        }
+
+        function saveAnswer(val) {
+            userAnswers[currentIndex] = val;
+        }
+
+        function nextQuestion() {
+            if (currentIndex < shuffledQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            let reviewHTML = "";
+
+            shuffledQuestions.forEach((item, index) => {
+                let userAns = (userAnswers[index] || "").trim();
+                let isCorrect = false;
+
+                if (item.type === 'ident') {
+                    if (userAns.toUpperCase() === item.answer.toUpperCase()) {
+                        isCorrect = true;
+                    }
+                } else {
+                    if (userAns.toUpperCase() === item.answer.toUpperCase()) {
+                        isCorrect = true;
+                    }
+                }
+
+                if (isCorrect) score++;
+
+                // Build review item box
+                let statusBadge = isCorrect 
+                    ? `<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md">CORRECT</span>` 
+                    : `<span class="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-md">INCORRECT</span>`;
+
+                let cardBorder = isCorrect ? "border-emerald-200 bg-emerald-50/40" : "border-rose-200 bg-rose-50/40";
+
+                reviewHTML += `
+                    <div class="p-4 rounded-xl border ${cardBorder}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold text-slate-500">Item ${index + 1}</span>
+                            ${statusBadge}
+                        </div>
+                        <p class="font-medium text-slate-900 mb-2">${item.q}</p>
+                        <div class="text-sm space-y-1">
+                            <p><strong class="text-slate-600">Your Answer:</strong> <span class="${isCorrect ? 'text-emerald-700 font-bold' : 'text-rose-700 font-bold'}">${userAns || '(No Answer)'}</span></p>
+                            ${!isCorrect ? `<p><strong class="text-slate-600">Correct Answer:</strong> <span class="text-indigo-700 font-bold">${item.answer}</span></p>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Display Score & Review Screen
+            document.getElementById('quiz-wrapper').classList.add('hidden');
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('review-student-name').textContent = `Examinee: ${studentName}`;
+            document.getElementById('review-container').innerHTML = reviewHTML;
+            document.getElementById('score-screen').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function restartQuiz() {
+            document.getElementById('score-screen').classList.add('hidden');
+            document.getElementById('student-name-input').value = "";
+            document.getElementById('welcome-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
